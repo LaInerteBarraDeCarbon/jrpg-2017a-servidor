@@ -13,39 +13,31 @@ import mensajeria.Comando;
 import mensajeria.PaqueteDeMovimientos;
 
 public class AtencionMovimientos extends Thread {
-	
+
 	private final Gson gson = new Gson();
 
 	public AtencionMovimientos() {
-		
+
 	}
 
 	public void run() {
-
-		synchronized(this){
-		
+		synchronized (this) {
 			try {
-	
 				while (true) {
-			
 					// Espero a que se conecte alguien
 					wait();
-					
 					// Le reenvio la conexion a todos
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
-					
-						if(conectado.getPaquetePersonaje().getEstado() == Estado.estadoJuego){
-						
-							PaqueteDeMovimientos pdp = (PaqueteDeMovimientos) new PaqueteDeMovimientos(Servidor.getUbicacionPersonajes()).clone();
+						if (conectado.getPaquetePersonaje().getEstado() == Estado.estadoJuego) {
+							PaqueteDeMovimientos pdp = (PaqueteDeMovimientos) new PaqueteDeMovimientos(
+									Servidor.getUbicacionPersonajes()).clone();
 							pdp.setComando(Comando.MOVIMIENTO);
-							conectado.getSalida().writeObject(gson.toJson(pdp));	
-						
+							conectado.getSalida().writeObject(gson.toJson(pdp));
 						}
 					}
-					
 				}
-				
-			} catch (Exception e){
+
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

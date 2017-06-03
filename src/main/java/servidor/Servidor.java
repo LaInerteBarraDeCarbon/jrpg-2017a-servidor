@@ -26,12 +26,12 @@ import mensajeria.PaquetePersonaje;
 public class Servidor extends Thread {
 
 	private static ArrayList<EscuchaCliente> clientesConectados = new ArrayList<>();
-	
+
 	private static Map<Integer, PaqueteMovimiento> ubicacionPersonajes = new HashMap<>();
 	private static Map<Integer, PaquetePersonaje> personajesConectados = new HashMap<>();
 
 	private static Thread server;
-	
+
 	private static ServerSocket serverSocket;
 	private static Conector conexionDB;
 	private final int PUERTO = 9999;
@@ -42,12 +42,12 @@ public class Servidor extends Thread {
 	private final static int ANCHO_LOG = ANCHO - 25;
 
 	public static JTextArea log;
-	
+
 	public static AtencionConexiones atencionConexiones = new AtencionConexiones();
 	public static AtencionMovimientos atencionMovimientos = new AtencionMovimientos();;
 
 	public static void main(String[] args) {
-		cargarInterfaz();	
+		cargarInterfaz();
 	}
 
 	private static void cargarInterfaz() {
@@ -66,7 +66,8 @@ public class Servidor extends Thread {
 		log = new JTextArea();
 		log.setEditable(false);
 		log.setFont(new Font("Times New Roman", Font.PLAIN, 13));
-		JScrollPane scroll = new JScrollPane(log, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane scroll = new JScrollPane(log, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scroll.setBounds(10, 40, ANCHO_LOG, ALTO_LOG);
 		ventana.add(scroll);
 
@@ -101,7 +102,7 @@ public class Servidor extends Thread {
 					log.append("Fallo al intentar detener el servidor." + System.lineSeparator());
 					e1.printStackTrace();
 				}
-				if(conexionDB != null)
+				if (conexionDB != null)
 					conexionDB.close();
 				botonDetener.setEnabled(false);
 				botonIniciar.setEnabled(true);
@@ -139,15 +140,15 @@ public class Servidor extends Thread {
 
 	public void run() {
 		try {
-			
+
 			conexionDB = new Conector();
 			conexionDB.connect();
-			
+
 			log.append("Iniciando el servidor..." + System.lineSeparator());
 			serverSocket = new ServerSocket(PUERTO);
 			log.append("Servidor esperando conexiones..." + System.lineSeparator());
 			String ipRemota;
-			
+
 			atencionConexiones.start();
 			atencionMovimientos.start();
 
@@ -164,7 +165,7 @@ public class Servidor extends Thread {
 				clientesConectados.add(atencion);
 			}
 		} catch (Exception e) {
-			log.append("Fallo la conexión." + System.lineSeparator());
+			log.append("Fallo la conexiï¿½n." + System.lineSeparator());
 			e.printStackTrace();
 		}
 	}
@@ -176,7 +177,7 @@ public class Servidor extends Thread {
 	public static Map<Integer, PaqueteMovimiento> getUbicacionPersonajes() {
 		return ubicacionPersonajes;
 	}
-	
+
 	public static Map<Integer, PaquetePersonaje> getPersonajesConectados() {
 		return personajesConectados;
 	}

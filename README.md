@@ -1,4 +1,4 @@
-# World Of Middle Earth (WOME) - servidor
+# World Of Middle Earth (WOME) - Servidor
 
 [![Build Status](https://travis-ci.org/LaInerteBarraDeCarbon/jrpg-2017a-servidor.svg?branch=master)](https://travis-ci.org/LaInerteBarraDeCarbon/jrpg-2017a-servidor)
 

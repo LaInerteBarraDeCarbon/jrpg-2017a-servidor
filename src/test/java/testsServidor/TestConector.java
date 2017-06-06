@@ -1,6 +1,7 @@
 package testsServidor;
 
 import java.io.IOException;
+import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,6 +12,19 @@ import servidor.Conector;
 import servidor.Servidor;
 
 public class TestConector {
+
+	private String nombreRandom() {
+		String abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+		StringBuilder salt = new StringBuilder();
+		Random rnd = new Random();
+		while (salt.length() < 8) {
+			int index = (int) (rnd.nextFloat() * abc.length());
+			salt.append(abc.charAt(index));
+		}
+		String saltStr = salt.toString();
+		return saltStr;
+
+	}
 
 	@Test
 	public void testConexionConLaDB() {
@@ -23,6 +37,7 @@ public class TestConector {
 		// Pasado este punto la conexión con la base de datos result� exitosa
 
 		Assert.assertEquals(1, 1);
+		conector.close();
 	}
 
 	@Test
@@ -42,6 +57,7 @@ public class TestConector {
 		pu = conector.getUsuario("UserTest");
 
 		Assert.assertEquals("UserTest", pu.getUsername());
+		conector.close();
 	}
 
 	@Test
@@ -65,7 +81,7 @@ public class TestConector {
 		pp.setSaludTope(1);
 
 		PaqueteUsuario pu = new PaqueteUsuario();
-		pu.setUsername("UserTest");
+		pu.setUsername(nombreRandom());
 		pu.setPassword("test");
 
 		conector.registrarUsuario(pu);
@@ -93,6 +109,7 @@ public class TestConector {
 		boolean resultadoLogin = conector.loguearUsuario(pu);
 
 		Assert.assertEquals(true, resultadoLogin);
+		conector.close();
 	}
 
 	@Test
@@ -110,6 +127,7 @@ public class TestConector {
 		boolean resultadoLogin = conector.loguearUsuario(pu);
 
 		Assert.assertEquals(false, resultadoLogin);
+		conector.close();
 	}
 
 }

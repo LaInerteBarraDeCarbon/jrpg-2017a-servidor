@@ -9,6 +9,6 @@
 	<classpathentry exported="true" kind="lib" path="sqlite-jdbc-3.15.1.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jrpg-2017a-dominio"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/cliente"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jrpg-2017a-cliente"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

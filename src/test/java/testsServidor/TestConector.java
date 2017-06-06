@@ -1,5 +1,7 @@
 package testsServidor;
 
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,7 +20,7 @@ public class TestConector {
 		Conector conector = new Conector();
 		conector.connect();
 
-		// Pasado este punto la conexión con la base de datos resultó exitosa
+		// Pasado este punto la conexiÃ³n con la base de datos resultï¿½ exitosa
 
 		Assert.assertEquals(1, 1);
 	}
@@ -43,7 +45,7 @@ public class TestConector {
 	}
 
 	@Test
-	public void testRegistrarPersonaje() {
+	public void testRegistrarPersonaje() throws IOException {
 		new Servidor();
 		Servidor.main(null);
 

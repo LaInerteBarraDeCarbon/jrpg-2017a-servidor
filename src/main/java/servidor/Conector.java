@@ -1,5 +1,6 @@
 package servidor;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -42,9 +43,7 @@ public class Conector {
 			PreparedStatement st1 = connect.prepareStatement("SELECT * FROM registro WHERE usuario= ? ");
 			st1.setString(1, user.getUsername());
 			result = st1.executeQuery();
-
 			if (!result.next()) {
-
 				PreparedStatement st = connect
 						.prepareStatement("INSERT INTO registro (usuario, password, idPersonaje) VALUES (?,?,?)");
 				st.setString(1, user.getUsername());
@@ -63,7 +62,6 @@ public class Conector {
 			System.err.println(ex.getMessage());
 			return false;
 		}
-
 	}
 
 	public boolean registrarPersonaje(PaquetePersonaje paquetePersonaje, PaqueteUsuario paqueteUsuario) {
@@ -89,7 +87,7 @@ public class Conector {
 			stRegistrarPersonaje.setInt(13, -1);
 			stRegistrarPersonaje.execute();
 
-			// Recupero la �ltima key generada
+			// Recupero la última key generada
 			ResultSet rs = stRegistrarPersonaje.getGeneratedKeys();
 			if (rs != null && rs.next()) {
 
@@ -155,10 +153,8 @@ public class Conector {
 			stAsignarPersonaje.setInt(2, idInventarioMochila);
 			stAsignarPersonaje.setInt(3, idInventarioMochila);
 			stAsignarPersonaje.execute();
-
 			Servidor.log.append("Se ha registrado el inventario de " + idInventarioMochila + System.lineSeparator());
 			return true;
-
 		} catch (SQLException e) {
 			Servidor.log.append("Error al registrar el inventario de " + idInventarioMochila + System.lineSeparator());
 			e.printStackTrace();
@@ -187,7 +183,6 @@ public class Conector {
 			Servidor.log.append("El usuario " + user.getUsername()
 					+ " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
 			return false;
-
 		} catch (SQLException e) {
 			Servidor.log
 					.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
@@ -199,10 +194,10 @@ public class Conector {
 
 	public void actualizarPersonaje(PaquetePersonaje paquetePersonaje) {
 		try {
+			int i = 0;
 			PreparedStatement stActualizarPersonaje = connect.prepareStatement(
 					"UPDATE personaje SET fuerza=?, destreza=?, inteligencia=?, saludTope=?, energiaTope=?, experiencia=?, nivel=? "
 							+ "  WHERE idPersonaje=?");
-
 			stActualizarPersonaje.setInt(1, paquetePersonaje.getFuerza());
 			stActualizarPersonaje.setInt(2, paquetePersonaje.getDestreza());
 			stActualizarPersonaje.setInt(3, paquetePersonaje.getInteligencia());
@@ -217,6 +212,38 @@ public class Conector {
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."
 					+ System.lineSeparator());
 			;
+
+			if (paquetePersonaje.getCantidadObjetosInventario() != 0 && paquetePersonaje.nuevoItem()) {
+				PreparedStatement obtenerDatosItem = connect.prepareStatement("SELECT * FROM item WHERE idItem = ?");
+				obtenerDatosItem.setInt(1,
+						paquetePersonaje.getIdItem(paquetePersonaje.getCantidadObjetosInventario() - 1));
+
+				ResultSet resultadoDatoItem = null;
+				resultadoDatoItem = obtenerDatosItem.executeQuery();
+				if (resultadoDatoItem.next()) {
+					paquetePersonaje.removerUltimoItem();
+					paquetePersonaje.añadirItem(resultadoDatoItem.getInt("idItem"),
+							resultadoDatoItem.getString("nombre"), resultadoDatoItem.getInt("bonusSalud"),
+							resultadoDatoItem.getInt("bonusEnergia"), resultadoDatoItem.getInt("bonusFuerza"),
+							resultadoDatoItem.getInt("bonusDestreza"), resultadoDatoItem.getInt("bonusInteligencia"),
+							resultadoDatoItem.getString("foto"));
+				}
+				PreparedStatement stActualizarMochila = connect.prepareStatement(
+						"UPDATE mochila SET item1=? ,item2=? ,item3=? ,item4=? ,item5=? ,item6=? ,item7=? ,item8=? ,item9=? "
+								+ ",item10=? ,item11=? ,item12=? ,item13=? ,item14=? ,item15=? ,item16=? ,item17=? ,item18=? ,item19=? ,item20=? WHERE idMochila=?");
+				while (i < paquetePersonaje.getCantidadObjetosInventario()) {
+					stActualizarMochila.setInt(i + 1, paquetePersonaje.getIdItem(i));
+					i++;
+				}
+				for (int j = paquetePersonaje.getCantidadObjetosInventario(); j < 20; j++) {
+					stActualizarMochila.setInt(j + 1, -1);
+				}
+				stActualizarMochila.setInt(21, paquetePersonaje.getId());
+				stActualizarMochila.executeUpdate();
+			}
+			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."
+					+ System.lineSeparator());
+			;
 		} catch (SQLException e) {
 			Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()
 					+ System.lineSeparator());
@@ -225,8 +252,12 @@ public class Conector {
 
 	}
 
-	public PaquetePersonaje getPersonaje(PaqueteUsuario user) {
+	public PaquetePersonaje getPersonaje(PaqueteUsuario user) throws IOException {
 		ResultSet result = null;
+		int i = 2;
+		int j = 0;
+		ResultSet resultadoItemsID = null;
+		ResultSet resultadoDatoItem = null;
 		try {
 			// Selecciono el personaje de ese usuario
 			PreparedStatement st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
@@ -241,6 +272,11 @@ public class Conector {
 					.prepareStatement("SELECT * FROM personaje WHERE idPersonaje = ?");
 			stSeleccionarPersonaje.setInt(1, idPersonaje);
 			result = stSeleccionarPersonaje.executeQuery();
+			PreparedStatement stDameItemsID = connect.prepareStatement("SELECT * FROM mochila WHERE idMochila = ?");
+
+			stDameItemsID.setInt(1, idPersonaje);
+			resultadoItemsID = stDameItemsID.executeQuery();
+			PreparedStatement stDatosItem = connect.prepareStatement("SELECT * FROM item WHERE idItem = ?");
 
 			// Obtengo los atributos del personaje
 			PaquetePersonaje personaje = new PaquetePersonaje();
@@ -255,6 +291,19 @@ public class Conector {
 			personaje.setNombre(result.getString("nombre"));
 			personaje.setExperiencia(result.getInt("experiencia"));
 			personaje.setNivel(result.getInt("nivel"));
+
+			while (j <= 9) {
+				if (resultadoItemsID.getInt(i) != -1) {
+					stDatosItem.setInt(1, resultadoItemsID.getInt(i));
+					resultadoDatoItem = stDatosItem.executeQuery();
+					personaje.añadirItem(resultadoDatoItem.getInt("idItem"), resultadoDatoItem.getString("nombre"),
+							resultadoDatoItem.getInt("bonusSalud"), resultadoDatoItem.getInt("bonusEnergia"),
+							resultadoDatoItem.getInt("bonusFuerza"), resultadoDatoItem.getInt("bonusDestreza"),
+							resultadoDatoItem.getInt("bonusInteligencia"), resultadoDatoItem.getString("foto"));
+				}
+				i++;
+				j++;
+			}
 
 			// Devuelvo el paquete personaje con sus datos
 			return personaje;
@@ -272,27 +321,43 @@ public class Conector {
 	public PaqueteUsuario getUsuario(String usuario) {
 		ResultSet result = null;
 		PreparedStatement st;
-
 		try {
 			st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
 			st.setString(1, usuario);
 			result = st.executeQuery();
-
 			String password = result.getString("password");
 			int idPersonaje = result.getInt("idPersonaje");
-
 			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
 			paqueteUsuario.setUsername(usuario);
 			paqueteUsuario.setPassword(password);
 			paqueteUsuario.setIdPj(idPersonaje);
-
 			return paqueteUsuario;
 		} catch (SQLException e) {
 			Servidor.log.append("Fallo al intentar recuperar el usuario " + usuario + System.lineSeparator());
 			Servidor.log.append(e.getMessage() + System.lineSeparator());
 			e.printStackTrace();
 		}
-
 		return new PaqueteUsuario();
+	}
+
+	public void actualizarInventario(PaquetePersonaje paquetePersonaje) {
+		int i = 0;
+		PreparedStatement stActualizarMochila;
+		try {
+			stActualizarMochila = connect.prepareStatement(
+					"UPDATE mochila SET item1=? ,item2=? ,item3=? ,item4=? ,item5=? ,item6=? ,item7=? ,item8=? ,item9=? "
+							+ ",item10=? ,item11=? ,item12=? ,item13=? ,item14=? ,item15=? ,item16=? ,item17=? ,item18=? ,item19=? ,item20=? WHERE idMochila=?");
+			while (i < paquetePersonaje.getCantidadObjetosInventario()) {
+				stActualizarMochila.setInt(i + 1, paquetePersonaje.getIdItem(i));
+				i++;
+			}
+			for (int j = paquetePersonaje.getCantidadObjetosInventario(); j < 20; j++) {
+				stActualizarMochila.setInt(j + 1, -1);
+			}
+			stActualizarMochila.setInt(21, paquetePersonaje.getId());
+			stActualizarMochila.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 }

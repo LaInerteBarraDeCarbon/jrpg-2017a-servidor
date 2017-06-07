@@ -13,16 +13,22 @@ import servidor.Servidor;
 
 public class TestConector {
 
+	/**
+	 * Genera un nombre al azar. <br>
+	 * No esperemos coherenecia.<br>
+	 * 
+	 * @return Nombre. <br>
+	 */
 	private String nombreRandom() {
 		String abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-		StringBuilder salt = new StringBuilder();
-		Random rnd = new Random();
-		while (salt.length() < 8) {
-			int index = (int) (rnd.nextFloat() * abc.length());
-			salt.append(abc.charAt(index));
+		StringBuilder nombre = new StringBuilder();
+		Random random = new Random();
+		while (nombre.length() < 8) {
+			int posicion = (int) (random.nextFloat() * abc.length());
+			nombre.append(abc.charAt(posicion));
 		}
-		String saltStr = salt.toString();
-		return saltStr;
+		String string = nombre.toString();
+		return string;
 
 	}
 

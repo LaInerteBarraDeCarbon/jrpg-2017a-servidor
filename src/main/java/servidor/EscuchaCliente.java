@@ -19,23 +19,74 @@ import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 
+/**
+ * Clase que "escucha" las acciones del usuario. <br>
+ */
 public class EscuchaCliente extends Thread {
 
+	/**
+	 * Socket del cliente. <br>
+	 */
 	private final Socket socket;
+	/**
+	 * Entrada del cliente. <br>
+	 */
 	private final ObjectInputStream entrada;
+	/**
+	 * Salida del cliente. <br>
+	 */
 	private final ObjectOutputStream salida;
+	/**
+	 * ID del personaje. <br>
+	 */
 	private int idPersonaje;
+	/**
+	 * GSon. <br>
+	 */
 	private final Gson gson = new Gson();
-
+	/**
+	 * Personaje del cliente. <br>
+	 */
 	private PaquetePersonaje paquetePersonaje;
+	/**
+	 * Movimientos del personaje. <br>
+	 */
 	private PaqueteMovimiento paqueteMovimiento;
+	/**
+	 * Acciones de batalla del personaje. <br>
+	 */
 	private PaqueteBatalla paqueteBatalla;
+	/**
+	 * Ataques del personaje. <br>
+	 */
 	private PaqueteAtacar paqueteAtacar;
+	/**
+	 * Acciones post batalla del personaje. <br>
+	 */
 	private PaqueteFinalizarBatalla paqueteFinalizarBatalla;
-
+	/**
+	 * Opciones de movimiento. <br>
+	 */
 	private PaqueteDeMovimientos paqueteDeMovimiento;
+	/**
+	 * Opciones de personajes .<br>
+	 */
 	private PaqueteDePersonajes paqueteDePersonajes;
 
+	/**
+	 * Crea el escucha de cliente. <br>
+	 * 
+	 * @param ip
+	 *            IP del cliente. <br>
+	 * @param socket
+	 *            Socket del cliente. <br>
+	 * @param entrada
+	 *            Entrada. <br>
+	 * @param salida
+	 *            Salida. <br>
+	 * @throws IOException
+	 *             Error al abrir. <br>
+	 */
 	public EscuchaCliente(String ip, Socket socket, ObjectInputStream entrada, ObjectOutputStream salida)
 			throws IOException {
 		this.socket = socket;
@@ -44,19 +95,17 @@ public class EscuchaCliente extends Thread {
 		paquetePersonaje = new PaquetePersonaje();
 	}
 
+	/**
+	 * Corre el escucha. <br>
+	 */
 	public void run() {
 		try {
-
 			Paquete paquete;
 			Paquete paqueteSv = new Paquete(null, 0);
 			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
-
 			String cadenaLeida = (String) entrada.readObject();
-
 			while (!((paquete = gson.fromJson(cadenaLeida, Paquete.class)).getComando() == Comando.DESCONECTAR)) {
-
 				switch (paquete.getComando()) {
-
 				case Comando.REGISTRO:
 
 					// Paquete que le voy a enviar al usuario
@@ -135,18 +184,13 @@ public class EscuchaCliente extends Thread {
 							(PaquetePersonaje) paquetePersonaje.clone());
 					Servidor.getUbicacionPersonajes().put(paquetePersonaje.getId(),
 							(PaqueteMovimiento) new PaqueteMovimiento(paquetePersonaje.getId()).clone());
-
 					synchronized (Servidor.atencionConexiones) {
 						Servidor.atencionConexiones.notify();
 					}
-
 					break;
-
 				case Comando.MOVIMIENTO:
-
 					paqueteMovimiento = (PaqueteMovimiento) (gson.fromJson((String) cadenaLeida,
 							PaqueteMovimiento.class));
-
 					Servidor.getUbicacionPersonajes().get(paqueteMovimiento.getIdPersonaje())
 							.setPosX(paqueteMovimiento.getPosX());
 					Servidor.getUbicacionPersonajes().get(paqueteMovimiento.getIdPersonaje())
@@ -155,29 +199,22 @@ public class EscuchaCliente extends Thread {
 							.setDireccion(paqueteMovimiento.getDireccion());
 					Servidor.getUbicacionPersonajes().get(paqueteMovimiento.getIdPersonaje())
 							.setFrame(paqueteMovimiento.getFrame());
-
 					synchronized (Servidor.atencionMovimientos) {
 						Servidor.atencionMovimientos.notify();
 					}
-
 					break;
-
 				case Comando.MOSTRARMAPAS:
-
 					// Indico en el log que el usuario se conecto a ese mapa
 					paquetePersonaje = (PaquetePersonaje) gson.fromJson(cadenaLeida, PaquetePersonaje.class);
 					Servidor.log.append(socket.getInetAddress().getHostAddress() + " ha elegido el mapa "
 							+ paquetePersonaje.getMapa() + System.lineSeparator());
 					break;
-
 				case Comando.BATALLA:
-
 					// Le reenvio al id del personaje batallado que quieren
 					// pelear
 					paqueteBatalla = (PaqueteBatalla) gson.fromJson(cadenaLeida, PaqueteBatalla.class);
 					Servidor.log.append(paqueteBatalla.getId() + " quiere batallar con " + paqueteBatalla.getIdEnemigo()
 							+ System.lineSeparator());
-
 					// seteo estado de batalla
 					Servidor.getPersonajesConectados().get(paqueteBatalla.getId()).setEstado(Estado.estadoBatalla);
 					Servidor.getPersonajesConectados().get(paqueteBatalla.getIdEnemigo())
@@ -194,13 +231,10 @@ public class EscuchaCliente extends Thread {
 							break;
 						}
 					}
-
 					synchronized (Servidor.atencionConexiones) {
 						Servidor.atencionConexiones.notify();
 					}
-
 					break;
-
 				case Comando.ATACAR:
 					paqueteAtacar = (PaqueteAtacar) gson.fromJson(cadenaLeida, PaqueteAtacar.class);
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
@@ -209,7 +243,6 @@ public class EscuchaCliente extends Thread {
 						}
 					}
 					break;
-
 				case Comando.FINALIZARBATALLA:
 					paqueteFinalizarBatalla = (PaqueteFinalizarBatalla) gson.fromJson(cadenaLeida,
 							PaqueteFinalizarBatalla.class);
@@ -222,26 +255,20 @@ public class EscuchaCliente extends Thread {
 							conectado.getSalida().writeObject(gson.toJson(paqueteFinalizarBatalla));
 						}
 					}
-
 					synchronized (Servidor.atencionConexiones) {
 						Servidor.atencionConexiones.notify();
 					}
 
 					break;
-
 				case Comando.ACTUALIZARPERSONAJE:
 					paquetePersonaje = (PaquetePersonaje) gson.fromJson(cadenaLeida, PaquetePersonaje.class);
 					Servidor.getConector().actualizarPersonaje(paquetePersonaje);
-
 					Servidor.getPersonajesConectados().remove(paquetePersonaje.getId());
 					Servidor.getPersonajesConectados().put(paquetePersonaje.getId(), paquetePersonaje);
-
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 						conectado.getSalida().writeObject(gson.toJson(paquetePersonaje));
 					}
-
 					break;
-
 				case Comando.ACTUALIZARINVENTARIO:
 					paquetePersonaje = (PaquetePersonaje) gson.fromJson(cadenaLeida, PaquetePersonaje.class);
 					Servidor.getConector().actualizarInventario(paquetePersonaje);
@@ -251,54 +278,71 @@ public class EscuchaCliente extends Thread {
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 						conectado.getSalida().writeObject(gson.toJson(paquetePersonaje));
 					}
-
 					break;
-
 				default:
 					break;
 				}
-
 				cadenaLeida = (String) entrada.readObject();
 			}
-
 			entrada.close();
 			salida.close();
 			socket.close();
-
 			Servidor.getPersonajesConectados().remove(paquetePersonaje.getId());
 			Servidor.getUbicacionPersonajes().remove(paquetePersonaje.getId());
 			Servidor.getClientesConectados().remove(this);
-
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 				paqueteDePersonajes = new PaqueteDePersonajes(Servidor.getPersonajesConectados());
 				paqueteDePersonajes.setComando(Comando.CONEXION);
 				conectado.salida.writeObject(gson.toJson(paqueteDePersonajes, PaqueteDePersonajes.class));
 			}
-
 			Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
-
 		} catch (IOException | ClassNotFoundException e) {
 			Servidor.log.append("Error de conexion: " + e.getMessage() + System.lineSeparator());
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Devuelve el socket. <br>
+	 * 
+	 * @return Socket. <br>
+	 */
 	public Socket getSocket() {
 		return socket;
 	}
 
+	/**
+	 * Devuelve la entrada. <br>
+	 * 
+	 * @return Entrada. <br>
+	 */
 	public ObjectInputStream getEntrada() {
 		return entrada;
 	}
 
+	/**
+	 * Devuelve la salida. <br>
+	 * 
+	 * @return Salida. <br>
+	 */
 	public ObjectOutputStream getSalida() {
 		return salida;
 	}
 
+	/**
+	 * Devuelve al personaje. <br>
+	 * 
+	 * @return Personaje. <br>
+	 */
 	public PaquetePersonaje getPaquetePersonaje() {
 		return paquetePersonaje;
 	}
 
+	/**
+	 * Devuelve el ID del personaje. <br>
+	 * 
+	 * @return ID personaje. <br>
+	 */
 	public int getIdPersonaje() {
 		return idPersonaje;
 	}

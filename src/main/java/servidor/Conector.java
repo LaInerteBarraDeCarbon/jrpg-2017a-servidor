@@ -24,6 +24,10 @@ public class Conector {
 	 * Conector. <br>
 	 */
 	Connection connect;
+	/**
+	 * Cantidad máxima de objetos en el inventario. <br>
+	 */
+	private static final int CANTIDADMAXIMAITEMS = 12;
 
 	/**
 	 * Se conecta con la base de datos. En el caso de no poder conectarse,
@@ -325,7 +329,7 @@ public class Conector {
 			personaje.setNombre(result.getString("nombre"));
 			personaje.setExperiencia(result.getInt("experiencia"));
 			personaje.setNivel(result.getInt("nivel"));
-			while (j <= 9) {
+			while (j <= CANTIDADMAXIMAITEMS) {
 				if (resultadoItemsID.getInt(i) != -1) {
 					stDatosItem.setInt(1, resultadoItemsID.getInt(i));
 					resultadoDatoItem = stDatosItem.executeQuery();

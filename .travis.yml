@@ -1,12 +1,14 @@
 language: java
+
 jdk:
-  - oraclejdk7
+
+  
+  - oraclejdk8
   - openjdk7
 
-before_install:
+  
 
- - pwd
- - ls  
- - wget -P "/home/travis/build/LaInerteBarraDeCarbon/jrpg-2017a-servidor/" https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.0/gson-2.8.0.jar
+before_install:
+ - "export DISPLAY=:99.0"
+ - "sh -e /etc/init.d/xvfb start"
  - chmod +x gradlew
-- git clone https://github.com/LaInerteBarraDeCarbon/jrpg-2017a-cliente.git /home/travis/build/LaInerteBarraDeCarbon/jrpg-2017a-cliente

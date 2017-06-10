@@ -23,7 +23,6 @@ import mensajeria.PaqueteUsuario;
  * Clase que "escucha" las acciones del usuario. <br>
  */
 public class EscuchaCliente extends Thread {
-
 	/**
 	 * Socket del cliente. <br>
 	 */
@@ -107,12 +106,9 @@ public class EscuchaCliente extends Thread {
 			while (!((paquete = gson.fromJson(cadenaLeida, Paquete.class)).getComando() == Comando.DESCONECTAR)) {
 				switch (paquete.getComando()) {
 				case Comando.REGISTRO:
-
 					// Paquete que le voy a enviar al usuario
 					paqueteSv.setComando(Comando.REGISTRO);
-
 					paqueteUsuario = (PaqueteUsuario) (gson.fromJson(cadenaLeida, PaqueteUsuario.class)).clone();
-
 					// Si el usuario se pudo registrar le envio un msj de exito
 					if (Servidor.getConector().registrarUsuario(paqueteUsuario)) {
 						paqueteSv.setMensaje(Paquete.msjExito);
@@ -124,62 +120,43 @@ public class EscuchaCliente extends Thread {
 						salida.writeObject(gson.toJson(paqueteSv));
 					}
 					break;
-
 				case Comando.CREACIONPJ:
-
 					// Casteo el paquete personaje
 					paquetePersonaje = (PaquetePersonaje) (gson.fromJson(cadenaLeida, PaquetePersonaje.class));
-
 					// Guardo el personaje en ese usuario
 					Servidor.getConector().registrarPersonaje(paquetePersonaje, paqueteUsuario);
-
 					// Le envio el id del personaje
 					salida.writeObject(gson.toJson(paquetePersonaje, paquetePersonaje.getClass()));
-
 					break;
-
 				case Comando.INICIOSESION:
 					paqueteSv.setComando(Comando.INICIOSESION);
-
 					// Recibo el paquete usuario
 					paqueteUsuario = (PaqueteUsuario) (gson.fromJson(cadenaLeida, PaqueteUsuario.class));
-
 					// Si se puede loguear el usuario le envio un mensaje de
 					// exito y el paquete personaje con los datos
 					if (Servidor.getConector().loguearUsuario(paqueteUsuario)) {
-
 						paquetePersonaje = new PaquetePersonaje();
 						paquetePersonaje = Servidor.getConector().getPersonaje(paqueteUsuario);
 						paquetePersonaje.setComando(Comando.INICIOSESION);
 						paquetePersonaje.setMensaje(Paquete.msjExito);
 						idPersonaje = paquetePersonaje.getId();
-
 						salida.writeObject(gson.toJson(paquetePersonaje));
-
 					} else {
 						paqueteSv.setMensaje(Paquete.msjFracaso);
 						salida.writeObject(gson.toJson(paqueteSv));
 					}
 					break;
-
 				case Comando.SALIR:
-
-					// Cierro todo
 					entrada.close();
 					salida.close();
 					socket.close();
-
 					// Lo elimino de los clientes conectados
 					Servidor.getClientesConectados().remove(this);
-
 					// Indico que se desconecto
 					Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
-
 					return;
-
 				case Comando.CONEXION:
 					paquetePersonaje = (PaquetePersonaje) (gson.fromJson(cadenaLeida, PaquetePersonaje.class)).clone();
-
 					Servidor.getPersonajesConectados().put(paquetePersonaje.getId(),
 							(PaquetePersonaje) paquetePersonaje.clone());
 					Servidor.getUbicacionPersonajes().put(paquetePersonaje.getId(),
@@ -258,7 +235,6 @@ public class EscuchaCliente extends Thread {
 					synchronized (Servidor.atencionConexiones) {
 						Servidor.atencionConexiones.notify();
 					}
-
 					break;
 				case Comando.ACTUALIZARPERSONAJE:
 					paquetePersonaje = (PaquetePersonaje) gson.fromJson(cadenaLeida, PaquetePersonaje.class);

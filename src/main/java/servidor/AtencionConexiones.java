@@ -31,7 +31,7 @@ public class AtencionConexiones extends Thread {
 				while (true) { // Espero a que se conecte alguien
 					wait();// Le reenvio la conexion a todos
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
-						if (conectado.getPaquetePersonaje().getEstado() != Estado.estadoOffline) {
+						if (conectado.getPaquetePersonaje().getEstado() != Estado.ESTADOOFFLINE) {
 							PaqueteDePersonajes pdp = (PaqueteDePersonajes) new PaqueteDePersonajes(
 									Servidor.getPersonajesConectados()).clone();
 							pdp.setComando(Comando.CONEXION);

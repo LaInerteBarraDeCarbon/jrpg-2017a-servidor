@@ -32,7 +32,7 @@ public class AtencionMovimientos extends Thread {
 				while (true) {// Espero a que se conecte alguien
 					wait();// Le reenvio la conexion a todos
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
-						if (conectado.getPaquetePersonaje().getEstado() == Estado.estadoJuego) {
+						if (conectado.getPaquetePersonaje().getEstado() == Estado.ESTADOJUEGO) {
 							PaqueteDeMovimientos pdp = (PaqueteDeMovimientos) new PaqueteDeMovimientos(
 									Servidor.getUbicacionPersonajes()).clone();
 							pdp.setComando(Comando.MOVIMIENTO);

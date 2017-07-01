@@ -40,7 +40,7 @@ public class AtencionConexiones extends Thread {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				Servidor.log.append("Fallo la escucha de clientes." + System.lineSeparator());
 			}
 		}
 	}

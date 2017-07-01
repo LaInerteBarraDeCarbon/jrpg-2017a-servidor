@@ -42,7 +42,7 @@ public class AtencionMovimientos extends Thread {
 				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				Servidor.log.append("Fallo al iniciar reconocimiento de movimiento." + System.lineSeparator());
 			}
 		}
 	}

@@ -85,7 +85,6 @@ public class Conector {
 			}
 		} catch (SQLException ex) {
 			Servidor.log.append("Eror al intentar registrar el usuario " + user.getUsername() + System.lineSeparator());
-			System.err.println(ex.getMessage());
 			return false;
 		}
 	}
@@ -149,7 +148,6 @@ public class Conector {
 		} catch (SQLException e) {
 			Servidor.log.append(
 					"Error al intentar crear el personaje " + paquetePersonaje.getNombre() + System.lineSeparator());
-			e.printStackTrace();
 			return false;
 		}
 	}
@@ -187,7 +185,6 @@ public class Conector {
 			return true;
 		} catch (SQLException e) {
 			Servidor.log.append("Error al registrar el inventario de " + idInventarioMochila + System.lineSeparator());
-			e.printStackTrace();
 			return false;
 		}
 	}
@@ -221,7 +218,6 @@ public class Conector {
 		} catch (SQLException e) {
 			Servidor.log
 					.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
-			e.printStackTrace();
 			return false;
 		}
 	}
@@ -281,7 +277,6 @@ public class Conector {
 		} catch (SQLException e) {
 			Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()
 					+ System.lineSeparator());
-			e.printStackTrace();
 		}
 	}
 
@@ -346,7 +341,6 @@ public class Conector {
 			Servidor.log
 					.append("Fallo al intentar recuperar el personaje " + user.getUsername() + System.lineSeparator());
 			Servidor.log.append(ex.getMessage() + System.lineSeparator());
-			ex.printStackTrace();
 		}
 		return new PaquetePersonaje();
 	}
@@ -375,7 +369,6 @@ public class Conector {
 		} catch (SQLException e) {
 			Servidor.log.append("Fallo al intentar recuperar el usuario " + usuario + System.lineSeparator());
 			Servidor.log.append(e.getMessage() + System.lineSeparator());
-			e.printStackTrace();
 		}
 		return new PaqueteUsuario();
 	}
@@ -403,7 +396,9 @@ public class Conector {
 			stActualizarMochila.setInt(21, paquetePersonaje.getId());
 			stActualizarMochila.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Servidor.log.append("Fallo al intentar recuperar el inventario de " + paquetePersonaje.getNombre()
+					+ System.lineSeparator());
+			Servidor.log.append(e.getMessage() + System.lineSeparator());
 		}
 	}
 }
